@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">PhoneAssistant</string>
+    <string name="app_name">Phone Assistant</string>
+    <string name="notify_title">Phone Assistant</string>
+    <string name="notify_in_background">Приложение работает в фоновом режиме</string>
+    <string name="press_me">Нажми меня</string>
+    <string name="close">Закрть</string>
+    <string name="show">Показывать информацию</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="check">Проверить</string>
+
 </resources>
