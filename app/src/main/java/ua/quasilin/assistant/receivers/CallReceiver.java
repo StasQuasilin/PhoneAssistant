@@ -104,7 +104,7 @@ public class CallReceiver extends BroadcastReceiver {
     }
 
     public static void ShowMessage(Context context, String phoneNumber) {
-
+        Log.i("Call", phoneNumber);
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         int LAYOUT_FLAG;
@@ -119,12 +119,12 @@ public class CallReceiver extends BroadcastReceiver {
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.CENTER;
+//        params.gravity = Gravity.CENTER;
 
         assert layoutInflater != null;
         windowLayout = (ViewGroup) layoutInflater.inflate(R.layout.info, null);
 
-        TextView textViewNumber= windowLayout.findViewById(R.id.textView);
+        TextView textViewNumber= windowLayout.findViewById(R.id.textViewNumber);
         Button buttonClose= windowLayout.findViewById(R.id.closeButton);
         textViewNumber.setText(phoneNumber);
         buttonClose.setOnClickListener(v -> closeWindow());
