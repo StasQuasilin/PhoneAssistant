@@ -59,4 +59,11 @@ public class MainService extends Service {
             return MainService.this;
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Toast.makeText(this, "Служба \'Phone Assistant\' астанавилась",
+                Toast.LENGTH_SHORT).show();
+    }
 }

@@ -41,6 +41,7 @@ public class CustomAuthenticator extends AsyncTask<String, Void, String>{
             HttpURLConnection urlConnection = (HttpURLConnection) u.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
+            urlConnection.setConnectTimeout(5000);
             urlConnection.connect();
 
             out = new BufferedOutputStream(urlConnection.getOutputStream());

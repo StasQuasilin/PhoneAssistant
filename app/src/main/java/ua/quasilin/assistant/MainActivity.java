@@ -25,6 +25,8 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Map;
+
 import ua.quasilin.assistant.services.MainService;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
@@ -113,6 +115,13 @@ public class MainActivity extends AppCompatActivity {
                 thread.start();
             }
         });
+        StringBuilder builder = new StringBuilder();
+
+        for (Map.Entry<String, String> entry : parameters.getHistory().entrySet()){
+            builder.append(entry.getKey()).append(":").append(entry.getValue());
+        }
+
+        textArea.setText(builder.toString());
 
     }
 

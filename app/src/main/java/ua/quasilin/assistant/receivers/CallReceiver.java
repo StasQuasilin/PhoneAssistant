@@ -82,6 +82,7 @@ public class CallReceiver extends BroadcastReceiver {
                 try {
                     JSONObject json = new JSONObject(data);
                     contact = json.getString("Contact");
+                    parameters.put(number, contact);
                     CallReceiver.ShowMessage(context, contact);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -119,7 +120,7 @@ public class CallReceiver extends BroadcastReceiver {
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
-//        params.gravity = Gravity.CENTER;
+        params.gravity = Gravity.CENTER;
 
         assert layoutInflater != null;
         windowLayout = (ViewGroup) layoutInflater.inflate(R.layout.info, null);

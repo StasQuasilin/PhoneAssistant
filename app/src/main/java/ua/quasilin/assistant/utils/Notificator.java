@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.app.NotificationCompat;
 
+import java.util.Random;
+
 import ua.quasilin.assistant.MainActivity;
 import ua.quasilin.assistant.R;
 
@@ -18,6 +20,9 @@ import static android.content.Context.NOTIFICATION_SERVICE;
  */
 
 public class Notificator {
+
+    private static Random random = new Random();
+
     public static void build(Context context) {
         Intent resultIntent = new Intent(context, MainActivity.class);
         PendingIntent resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent,
@@ -30,13 +35,13 @@ public class Notificator {
                         .setContentTitle(context.getResources().getString(R.string.notify_title))
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setContentIntent(resultPendingIntent)
-//                        .setColor(Color.GREEN));
+                        .setColor(Color.GREEN)
                         .setContentText(context.getResources().getString(R.string.notify_in_background));
 
 
         Notification notification = builder.build();
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(1, notification);
+        notificationManager.notify(random.nextInt(), notification);
     }
 }
