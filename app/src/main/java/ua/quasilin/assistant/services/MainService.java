@@ -15,6 +15,7 @@ import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
 import ua.quasilin.assistant.utils.Notificator;
 import ua.quasilin.assistant.utils.Permissions;
+import ua.quasilin.assistant.utils.RunChecker;
 
 /**
  * Created by szpt_user045 on 29.10.2018.
@@ -25,6 +26,9 @@ public class MainService extends Service {
     final IBinder binder = new ServiceBinder();
     ApplicationParameters parameters;
     CustomAuthenticator authenticator;
+    CallReceiver receiver;
+    public static boolean wasRunning = false;
+
 
     Random random = new Random();
     @Nullable
@@ -36,17 +40,22 @@ public class MainService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        parameters = ApplicationParameters.getInstance(getApplicationContext());
 
-        Permissions.insert(getApplicationContext());
-        this.registerReceiver(new CallReceiver(parameters), new IntentFilter("android.intent.action.PHONE_STATE"));
-        Toast.makeText(this, "Служба \'Phone Assistant\' создана",
-                Toast.LENGTH_SHORT).show();
-        Notificator.build(getBaseContext());
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        parameters = ApplicationParameters.getInstance(getApplicationContext());
+        Permissions.insert(getApplicationContext());
+
+        receiver = new CallReceiver(parameters);
+        this.registerReceiver(receiver, new IntentFilter("android.intent.action.PHONE_STATE"));
+
+        Toast.makeText(this, "Служба \'Phone Assistant\' создана",
+                Toast.LENGTH_SHORT).show();
+        Notificator.build(getBaseContext(), 1);
+
         return START_STICKY;
     }
 
@@ -63,6 +72,7 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(receiver);
         Toast.makeText(this, "Служба \'Phone Assistant\' астанавилась",
                 Toast.LENGTH_SHORT).show();
     }

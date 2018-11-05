@@ -23,7 +23,7 @@ public class Notificator {
 
     private static Random random = new Random();
 
-    public static void build(Context context) {
+    public static void build(Context context, int id) {
         Intent resultIntent = new Intent(context, MainActivity.class);
         PendingIntent resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
@@ -42,6 +42,6 @@ public class Notificator {
         Notification notification = builder.build();
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(random.nextInt(), notification);
+        notificationManager.notify(id, notification);
     }
 }

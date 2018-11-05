@@ -31,6 +31,7 @@ import ua.quasilin.assistant.services.MainService;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
 import ua.quasilin.assistant.utils.Permissions;
+import ua.quasilin.assistant.utils.RunChecker;
 import ua.quasilin.assistant.utils.ServiceStarter;
 
 public class MainActivity extends AppCompatActivity {
@@ -45,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        Permissions.insert(getApplicationContext());
         setContentView(R.layout.activity_main);
         serviceIntent = new Intent(getApplicationContext(), MainService.class);
         serviceConnection = new ServiceConnection() {
@@ -61,7 +61,9 @@ public class MainActivity extends AppCompatActivity {
                 bound = false;
             }
         };
-        bindToService();
+
+        ServiceStarter.Start(getApplicationContext(), serviceIntent);
+//        bindToService();
         parameters = ApplicationParameters.getInstance(getApplicationContext());
         authenticator = new CustomAuthenticator(parameters);
         initValues();
@@ -128,11 +130,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindFromService();
+//        unbindFromService();
     }
 
     void bindToService() {
-        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
+        bindService(serviceIntent, serviceConnection, BIND_ABOVE_CLIENT);
     }
 
 
