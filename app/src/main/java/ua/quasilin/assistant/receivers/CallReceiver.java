@@ -36,6 +36,7 @@ import ua.quasilin.assistant.utils.CustomAuthenticator;
 public class CallReceiver extends BroadcastReceiver {
 
     private static WindowManager windowManager;
+    @SuppressLint("StaticFieldLeak")
     private static ViewGroup windowLayout;
     ApplicationParameters parameters;
     CustomAuthenticator authenticator;
@@ -78,7 +79,7 @@ public class CallReceiver extends BroadcastReceiver {
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
                 String data = bundle.getString("data");
-                String contact = data;
+                String contact;
                 try {
                     JSONObject json = new JSONObject(data);
                     contact = json.getString("Contact");

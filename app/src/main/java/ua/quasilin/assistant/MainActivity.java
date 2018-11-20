@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
         TextView textArea = findViewById(R.id.textArea);
 
         checkButton.setOnClickListener(view -> {
-            Log.i("!!", "Check click");
             String checkText = check.getText().toString();
             if (!checkText.isEmpty()){
                 @SuppressLint("HandlerLeak") final Handler handler = new Handler(){
@@ -120,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         StringBuilder builder = new StringBuilder();
 
         for (Map.Entry<String, String> entry : parameters.getHistory().entrySet()){
-            builder.append(entry.getKey()).append(":").append(entry.getValue());
+            builder.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
         }
 
         textArea.setText(builder.toString());

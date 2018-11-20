@@ -39,9 +39,8 @@ public class CustomAuthenticator extends AsyncTask<String, Void, String>{
             Authenticator.setDefault(new BasicAuthenticator(parameters.getLogin(), parameters.getPassword()));
             URL u = new URL(parameters.getUrl());
             HttpURLConnection urlConnection = (HttpURLConnection) u.openConnection();
-            urlConnection.setDoOutput(true);
+//            urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
-            urlConnection.setConnectTimeout(5000);
             urlConnection.connect();
 
             out = new BufferedOutputStream(urlConnection.getOutputStream());
@@ -53,8 +52,9 @@ public class CustomAuthenticator extends AsyncTask<String, Void, String>{
             out.close();
 
             int responseCode = urlConnection.getResponseCode();
+
             if (responseCode != HttpURLConnection.HTTP_OK){
-                result.append("Response code: ").append(responseCode);
+                result.append("answer: ").append(responseCode);
             } else {
                 try {
                     Scanner httpResponseScanner = new Scanner(urlConnection.getInputStream(), "UTF-8");
