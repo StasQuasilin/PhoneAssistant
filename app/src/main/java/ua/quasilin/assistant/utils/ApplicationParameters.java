@@ -24,6 +24,7 @@ public class ApplicationParameters {
     private String password = "111111";
     private Context context;
     private HashMap<String, String> history = new HashMap<>();
+    public int instances = 0;
 
     private ApplicationParameters(Context context) {
         this.context = context;

@@ -15,6 +15,7 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -73,12 +74,39 @@ public class MainActivity extends AppCompatActivity {
     private void initValues() {
         Switch mainSwitch = findViewById(R.id.mainSwitcher);
         mainSwitch.setChecked(parameters.isEnable());
+        mainSwitch.setOnClickListener(v -> {
+            parameters.setEnable(mainSwitch.isChecked());
+        });
 
         EditText login = findViewById(R.id.loginEdit);
         login.setText(parameters.getLogin());
+        login.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                parameters.setLogin(login.getText().toString());
+            }
+        });
 
         EditText password = findViewById(R.id.editPassword);
         password.setText(parameters.getPassword());
+        password.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                parameters.setPassword(password.getText().toString());
+            }
+        });
 
         EditText check = findViewById(R.id.editCheck);
         Button checkButton = findViewById(R.id.checkButton);
@@ -124,12 +152,6 @@ public class MainActivity extends AppCompatActivity {
 
         textArea.setText(builder.toString());
 
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-//        unbindFromService();
     }
 
     void bindToService() {

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.telephony.TelephonyManager;
@@ -54,9 +55,12 @@ public class CallReceiver extends BroadcastReceiver {
             String extra = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
             if (extra.equals(TelephonyManager.EXTRA_STATE_RINGING)){
                 if (!incomeCall) {
-                    String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
-                    DoRequest(context, number);
-                    incomeCall = true;
+                    if (parameters.isEnable()) {
+                        Log.i("onReceive", "Income call");
+                        String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                        incomeCall = true;
+                        DoRequest(context, number);
+                    }
                 }
             } else if(extra.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)){
                 if (incomeCall) {
@@ -74,20 +78,23 @@ public class CallReceiver extends BroadcastReceiver {
     }
 
     void DoRequest(final Context context, final String number){
+        Log.i("DoRequest", "Do");
         @SuppressLint("HandlerLeak") final Handler handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
+                Log.i("Data", bundle.toString());
                 String data = bundle.getString("data");
-                String contact;
+                String contact = data;
+
                 try {
                     JSONObject json = new JSONObject(data);
                     contact = json.getString("Contact");
                     parameters.put(number, contact);
-                    CallReceiver.ShowMessage(context, contact);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                CallReceiver.ShowMessage(context, contact);
             }
         };
         Runnable runnable = () -> {
@@ -101,8 +108,28 @@ public class CallReceiver extends BroadcastReceiver {
         thread.start();
     }
 
+    static Toast mToastToShow;
+
     private static void ShowToast(Context context, String contact) {
-        Toast.makeText(context, contact, Toast.LENGTH_LONG).show();
+
+            // Set the toast and duration
+            int toastDurationInMilliSeconds = 1000;
+            mToastToShow = Toast.makeText(context, contact, Toast.LENGTH_LONG);
+
+            // Set the countdown to display the toast
+            CountDownTimer toastCountDown;
+            toastCountDown = new CountDownTimer(toastDurationInMilliSeconds, 3500 /*Tick duration*/) {
+                public void onTick(long millisUntilFinished) {
+                    mToastToShow.show();
+                }
+                public void onFinish() {
+                    mToastToShow.cancel();
+                }
+            };
+
+            // Show the toast and starts the countdown
+            mToastToShow.show();
+            toastCountDown.start();
     }
 
     public static void ShowMessage(Context context, String phoneNumber) {

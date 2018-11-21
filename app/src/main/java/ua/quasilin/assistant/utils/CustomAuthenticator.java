@@ -34,27 +34,28 @@ public class CustomAuthenticator extends AsyncTask<String, Void, String>{
         OutputStream out;
 
         try {
-            Log.i("!!Login", parameters.getLogin());
-            Log.i("!!Password", parameters.getPassword());
             Authenticator.setDefault(new BasicAuthenticator(parameters.getLogin(), parameters.getPassword()));
             URL u = new URL(parameters.getUrl());
             HttpURLConnection urlConnection = (HttpURLConnection) u.openConnection();
-//            urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.connect();
 
             out = new BufferedOutputStream(urlConnection.getOutputStream());
 
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-            writer.write(strings[0]);
-            writer.flush();
+
+            for(String s : strings) {
+                writer.write(s);
+            }
+
             writer.close();
             out.close();
 
             int responseCode = urlConnection.getResponseCode();
+            Log.i("Response Code", String.valueOf(responseCode));
 
             if (responseCode != HttpURLConnection.HTTP_OK){
-                result.append("answer: ").append(responseCode);
+                result.append("Response code: ").append(responseCode);
             } else {
                 try {
                     Scanner httpResponseScanner = new Scanner(urlConnection.getInputStream(), "UTF-8");
