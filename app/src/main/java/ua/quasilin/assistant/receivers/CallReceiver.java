@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,11 +25,10 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.Authenticator;
-
 import ua.quasilin.assistant.R;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
+import ua.quasilin.assistant.utils.Notificator;
 
 /**
  * Created by szpt_user045 on 29.10.2018.
@@ -90,11 +90,12 @@ public class CallReceiver extends BroadcastReceiver {
                 try {
                     JSONObject json = new JSONObject(data);
                     contact = json.getString("Contact");
-                    parameters.put(number, contact);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                CallReceiver.ShowMessage(context, contact);
+                if (incomeCall) {
+                    CallReceiver.ShowToast(context, contact);
+                }
             }
         };
         Runnable runnable = () -> {
@@ -108,28 +109,30 @@ public class CallReceiver extends BroadcastReceiver {
         thread.start();
     }
 
-    static Toast mToastToShow;
-
+    static Toast toast;
+    static CountDownTimer toastCountDown;
     private static void ShowToast(Context context, String contact) {
 
-            // Set the toast and duration
-            int toastDurationInMilliSeconds = 1000;
-            mToastToShow = Toast.makeText(context, contact, Toast.LENGTH_LONG);
+            int toastDurationInMilliSeconds = 60000;
+            toast = Toast.makeText(context, contact, Toast.LENGTH_SHORT);
 
-            // Set the countdown to display the toast
-            CountDownTimer toastCountDown;
-            toastCountDown = new CountDownTimer(toastDurationInMilliSeconds, 3500 /*Tick duration*/) {
+            toastCountDown = new CountDownTimer(toastDurationInMilliSeconds, 1000 ) {
                 public void onTick(long millisUntilFinished) {
-                    mToastToShow.show();
+                    toast.show();
                 }
                 public void onFinish() {
-                    mToastToShow.cancel();
+                    toast.cancel();
                 }
             };
 
-            // Show the toast and starts the countdown
-            mToastToShow.show();
+            TextView view = toast.getView().findViewById(android.R.id.message);
+            toast.setGravity(Gravity.CENTER, 0 , 0);
+            toast.show();
             toastCountDown.start();
+    }
+
+    private static void ShowNotification(Context context, String contact) {
+        Notificator.show(context, contact, 2);
     }
 
     public static void ShowMessage(Context context, String phoneNumber) {
@@ -166,6 +169,10 @@ public class CallReceiver extends BroadcastReceiver {
         if (windowLayout !=null){
             windowManager.removeView(windowLayout);
             windowLayout =null;
+        }
+
+        if (toastCountDown != null) {
+            toastCountDown.cancel();
         }
     }
 }

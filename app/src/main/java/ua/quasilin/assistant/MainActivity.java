@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Build;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -22,15 +23,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ua.quasilin.assistant.services.MainService;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
+import ua.quasilin.assistant.utils.Notificator;
 import ua.quasilin.assistant.utils.Permissions;
 import ua.quasilin.assistant.utils.RunChecker;
 import ua.quasilin.assistant.utils.ServiceStarter;
@@ -146,13 +151,17 @@ public class MainActivity extends AppCompatActivity {
         });
         StringBuilder builder = new StringBuilder();
 
-        for (Map.Entry<String, String> entry : parameters.getHistory().entrySet()){
-            builder.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
-        }
-
         textArea.setText(builder.toString());
 
+        Button testButton = findViewById(R.id.test);
+        testButton.setOnClickListener(v -> {
+            Notificator.show(getApplicationContext(), "Test by test", 1);
+
+        });
+
     }
+
+
 
     void bindToService() {
         bindService(serviceIntent, serviceConnection, BIND_ABOVE_CLIENT);

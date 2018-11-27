@@ -1,13 +1,17 @@
 package ua.quasilin.assistant.utils;
 
+import android.app.AutomaticZenRule;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
+import java.util.Map;
 import java.util.Random;
 
 import ua.quasilin.assistant.MainActivity;
@@ -44,4 +48,26 @@ public class Notificator {
                 (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(id, notification);
     }
+
+    public static void show(Context context, String contact, int id) {
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(context, "0")
+                        .setSmallIcon(android.R.drawable.ic_menu_call)
+                        .setVibrate(new long[0])
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                        .setTimeoutAfter(60000)
+                        .setContentTitle(contact);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            builder.setPriority(NotificationManager.IMPORTANCE_HIGH);
+        }
+
+        Notification notification = builder.build();
+        NotificationManager notificationManager =(NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+
+        notificationManager.notify(id, notification);
+    }
 }
+

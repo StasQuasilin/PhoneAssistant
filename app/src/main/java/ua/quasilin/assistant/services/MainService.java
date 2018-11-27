@@ -96,12 +96,9 @@ public class MainService extends Service {
         receiver = new CallReceiver(parameters);
         this.registerReceiver(receiver, new IntentFilter("android.intent.action.PHONE_STATE"));
 
-
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notificator.build(getBaseContext(), 1);
-//        }
-
+        }
 
         return START_STICKY;
     }
