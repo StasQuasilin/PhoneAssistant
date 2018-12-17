@@ -1,5 +1,6 @@
 package ua.quasilin.assistant.receivers;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.RequiresPermission;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -29,6 +31,8 @@ import ua.quasilin.assistant.R;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
 import ua.quasilin.assistant.utils.Notificator;
+import ua.quasilin.assistant.utils.RequestWorker;
+import ua.quasilin.assistant.utils.ShowType;
 
 /**
  * Created by szpt_user045 on 29.10.2018.
@@ -49,6 +53,7 @@ public class CallReceiver extends BroadcastReceiver {
     }
 
     @Override
+    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     public void onReceive(Context context, Intent intent) {
 
         if (intent.getAction().equals("android.intent.action.PHONE_STATE")){
@@ -56,7 +61,6 @@ public class CallReceiver extends BroadcastReceiver {
             if (extra.equals(TelephonyManager.EXTRA_STATE_RINGING)){
                 if (!incomeCall) {
                     if (parameters.isEnable()) {
-                        Log.i("onReceive", "Income call");
                         String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
                         incomeCall = true;
                         DoRequest(context, number);
@@ -126,7 +130,9 @@ public class CallReceiver extends BroadcastReceiver {
             };
 
             TextView view = toast.getView().findViewById(android.R.id.message);
-            toast.setGravity(Gravity.CENTER, 0 , 0);
+            view.setTextSize(16);
+            view.setGravity(Gravity.CENTER);
+            view.setTextColor(Color.LTGRAY);
             toast.show();
             toastCountDown.start();
     }
@@ -151,7 +157,7 @@ public class CallReceiver extends BroadcastReceiver {
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.CENTER;
+        params.gravity = Gravity.BOTTOM;
 
         assert layoutInflater != null;
         windowLayout = (ViewGroup) layoutInflater.inflate(R.layout.info, null);

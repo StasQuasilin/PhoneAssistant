@@ -33,6 +33,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import ua.quasilin.assistant.services.MainService;
+import ua.quasilin.assistant.services.NotificationListener;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
 import ua.quasilin.assistant.utils.Notificator;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         ServiceStarter.Start(getApplicationContext(), serviceIntent);
+//        ServiceStarter.Start(getApplicationContext(), new Intent(getApplicationContext(), NotificationListener.class));
 //        bindToService();
         parameters = ApplicationParameters.getInstance(getApplicationContext());
         authenticator = new CustomAuthenticator(parameters);
@@ -156,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
         Button testButton = findViewById(R.id.test);
         testButton.setOnClickListener(v -> {
             Notificator.show(getApplicationContext(), "Test by test", 1);
+            Notificator.show(getApplicationContext(), "Test by test", 2);
 
         });
 

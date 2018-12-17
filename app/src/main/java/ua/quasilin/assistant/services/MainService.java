@@ -18,7 +18,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Random;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ua.quasilin.assistant.R;
 import ua.quasilin.assistant.receivers.CallReceiver;
@@ -34,15 +36,10 @@ import ua.quasilin.assistant.utils.RunChecker;
 
 public class MainService extends Service {
 
-    private static WindowManager windowManager;
-    private static ViewGroup windowLayout;
     final IBinder binder = new ServiceBinder();
     ApplicationParameters parameters;
-    CustomAuthenticator authenticator;
     CallReceiver receiver;
-    static boolean isRun = false;
 
-    Random random = new Random();
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -52,59 +49,26 @@ public class MainService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (!isRun) {
-            Toast.makeText(this, "Служба \'Phone Assistant\' создана",
-                    Toast.LENGTH_SHORT).show();
-        }
-        isRun = true;
-    }
-
-    public static void ShowBackground(Context context) {
-
-        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        int LAYOUT_FLAG;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+            super.startForeground(1, Notificator.build(getBaseContext(), 1));
         } else {
-            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+            Toast.makeText(getApplicationContext(),
+                    "Служба \'Phone Assistant\' работает в фоновом режиме", Toast.LENGTH_LONG).show();
+
         }
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                LAYOUT_FLAG,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.CENTER_VERTICAL;
-
-        assert layoutInflater != null;
-        windowLayout = (ViewGroup) layoutInflater.inflate(R.layout.main_background, null);
-
-        windowManager.addView(windowLayout, params);
 
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.i("Main Service", "Start");
-//        ShowBackground(getApplicationContext());
         parameters = ApplicationParameters.getInstance(getApplicationContext());
-
         Permissions.insert(getApplicationContext());
 
         receiver = new CallReceiver(parameters);
-        this.registerReceiver(receiver, new IntentFilter("android.intent.action.PHONE_STATE"));
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notificator.build(getBaseContext(), 1);
-        }
+        registerReceiver(receiver, new IntentFilter("android.intent.action.PHONE_STATE"));
 
         return START_STICKY;
-    }
-
-    public String getRandom() {
-        return String.valueOf(random.nextInt());
     }
 
     public class ServiceBinder extends Binder{
@@ -116,9 +80,12 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        isRun=false;
         unregisterReceiver(receiver);
-        Toast.makeText(this, "Служба \'Phone Assistant\' астанавилась",
-                Toast.LENGTH_SHORT).show();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            stopForeground(true);
+        } else {
+            Toast.makeText(getApplicationContext(),
+                    "Служба \'Phone Assistant\' остановлена", Toast.LENGTH_LONG);
+        }
     }
 }

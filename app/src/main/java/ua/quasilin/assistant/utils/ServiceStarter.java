@@ -14,11 +14,7 @@ import ua.quasilin.assistant.services.MainService;
 public class ServiceStarter {
     public static void Start(Context context, Intent intent){
         if (!RunChecker.isRunning(MainService.class, context)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent);
-            } else {
-                context.startService(intent);
-            }
+            context.startService(intent);
         }
     }
 
