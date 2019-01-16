@@ -36,6 +36,7 @@ import ua.quasilin.assistant.utils.HistoryArchive;
 import ua.quasilin.assistant.utils.HistoryType;
 import ua.quasilin.assistant.utils.connection.IConnector;
 import ua.quasilin.assistant.utils.Notificator;
+import ua.quasilin.assistant.utils.connection.OkConnector;
 
 /**
  * Created by szpt_user045 on 29.10.2018.
@@ -55,7 +56,7 @@ public class CallReceiver extends BroadcastReceiver {
 
     public CallReceiver(ApplicationParameters parameters, Context context) {
         this.parameters = parameters;
-        connector = new CustomAuthenticator(parameters);
+        connector = new OkConnector(parameters);
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         displayState = new DisplayState(context);
         archive = HistoryArchive.getArchive(context);
@@ -110,21 +111,22 @@ public class CallReceiver extends BroadcastReceiver {
                 Log.i("Data", bundle.toString());
                 String data = bundle.getString("data");
                 String contact = data;
-
-                try {
-                    JSONObject json = new JSONObject(data);
-                    contact = json.getString("Contact");
-                    archive.addToArchive(HistoryType.income, number, contact);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                if (incomeCall) {
-                    if(currentScreenState){
-                        CallReceiver.ShowNotification(context, contact);
-                    } else {
-                        CallReceiver.ShowMessage(context, contact);
+                if (data != null) {
+                    try {
+                        JSONObject json = new JSONObject(data);
+                        contact = json.getString("contact");
+                        archive.addToArchive(HistoryType.income, number, contact);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                    if (incomeCall) {
+                        if (currentScreenState) {
+                            CallReceiver.ShowNotification(context, contact);
+                        } else {
+                            CallReceiver.ShowMessage(context, contact);
+                        }
 
+                    }
                 }
             }
         };
