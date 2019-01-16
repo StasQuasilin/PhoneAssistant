@@ -17,7 +17,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -27,12 +26,16 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 import ua.quasilin.assistant.R;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
+import ua.quasilin.assistant.utils.DisplayState;
+import ua.quasilin.assistant.utils.HistoryArchive;
+import ua.quasilin.assistant.utils.HistoryType;
+import ua.quasilin.assistant.utils.connection.IConnector;
 import ua.quasilin.assistant.utils.Notificator;
-import ua.quasilin.assistant.utils.RequestWorker;
-import ua.quasilin.assistant.utils.ShowType;
 
 /**
  * Created by szpt_user045 on 29.10.2018.
@@ -44,23 +47,40 @@ public class CallReceiver extends BroadcastReceiver {
     @SuppressLint("StaticFieldLeak")
     private static ViewGroup windowLayout;
     ApplicationParameters parameters;
-    CustomAuthenticator authenticator;
+    IConnector connector;
     private boolean incomeCall = false;
+    DisplayState displayState;
+    HistoryArchive archive;
+    private static final int NOTIFICATION_ID = 2;
 
-    public CallReceiver(ApplicationParameters parameters) {
+    public CallReceiver(ApplicationParameters parameters, Context context) {
         this.parameters = parameters;
-        authenticator = new CustomAuthenticator(parameters);
+        connector = new CustomAuthenticator(parameters);
+        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        displayState = new DisplayState(context);
+        archive = HistoryArchive.getArchive(context);
     }
+
+    boolean screenLock;
+    boolean currentScreenState;
+    static boolean notificationShow = false;
 
     @Override
     @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     public void onReceive(Context context, Intent intent) {
+        if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)){
+            screenLock = true;
+        } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)){
+            screenLock = false;
+        }
 
         if (intent.getAction().equals("android.intent.action.PHONE_STATE")){
             String extra = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
             if (extra.equals(TelephonyManager.EXTRA_STATE_RINGING)){
                 if (!incomeCall) {
+                    Toast.makeText(context, "Income call", Toast.LENGTH_SHORT).show();
                     if (parameters.isEnable()) {
+                        currentScreenState = screenLock;
                         String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
                         incomeCall = true;
                         DoRequest(context, number);
@@ -68,12 +88,12 @@ public class CallReceiver extends BroadcastReceiver {
                 }
             } else if(extra.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)){
                 if (incomeCall) {
-                    closeWindow();
+                    closeWindow(context);
                     incomeCall = false;
                 }
             } else if(extra.equals(TelephonyManager.EXTRA_STATE_IDLE)){
                 if (incomeCall) {
-                    closeWindow();
+                    closeWindow(context);
                     incomeCall = false;
                 }
             }
@@ -94,18 +114,28 @@ public class CallReceiver extends BroadcastReceiver {
                 try {
                     JSONObject json = new JSONObject(data);
                     contact = json.getString("Contact");
+                    archive.addToArchive(HistoryType.income, number, contact);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 if (incomeCall) {
-                    CallReceiver.ShowToast(context, contact);
+                    if(currentScreenState){
+                        CallReceiver.ShowNotification(context, contact);
+                    } else {
+                        CallReceiver.ShowMessage(context, contact);
+                    }
+
                 }
             }
         };
         Runnable runnable = () -> {
             Message msg = handler.obtainMessage();
             Bundle bundle = new Bundle();
-            bundle.putString("data", authenticator.Request(number));
+            try {
+                bundle.putString("data", connector.Request(number));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             msg.setData(bundle);
             handler.sendMessage(msg);
         };
@@ -138,12 +168,12 @@ public class CallReceiver extends BroadcastReceiver {
     }
 
     private static void ShowNotification(Context context, String contact) {
-        Notificator.show(context, contact, 2);
+        notificationShow = true;
+        Notificator.show(context, contact, NOTIFICATION_ID);
     }
 
     public static void ShowMessage(Context context, String phoneNumber) {
-        Log.i("Call", phoneNumber);
-        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         int LAYOUT_FLAG;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -157,24 +187,30 @@ public class CallReceiver extends BroadcastReceiver {
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.BOTTOM;
+        params.gravity = Gravity.CENTER;
 
-        assert layoutInflater != null;
         windowLayout = (ViewGroup) layoutInflater.inflate(R.layout.info, null);
 
         TextView textViewNumber= windowLayout.findViewById(R.id.textViewNumber);
         Button buttonClose= windowLayout.findViewById(R.id.closeButton);
+//        TextView details = windowLayout.findViewById(R.id.details);
+
         textViewNumber.setText(phoneNumber);
-        buttonClose.setOnClickListener(v -> closeWindow());
+
+        buttonClose.setOnClickListener(v -> closeWindow(context));
 
         windowManager.addView(windowLayout, params);
 
     }
 
-    private static void closeWindow() {
+    private static void closeWindow(Context context) {
         if (windowLayout !=null){
             windowManager.removeView(windowLayout);
             windowLayout =null;
+        }
+
+        if (notificationShow){
+            Notificator.close(context, NOTIFICATION_ID);
         }
 
         if (toastCountDown != null) {

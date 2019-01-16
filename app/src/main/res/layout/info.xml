@@ -2,42 +2,57 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/MainLinear"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="#ffffff"
     android:baselineAligned="false"
     android:gravity="center"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:visibility="visible">
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_weight="1"
-        android:scaleType="center"
-        android:visibility="visible"
-        app:srcCompat="@android:drawable/ic_menu_info_details"
-        tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/textViewNumber"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/SecLinear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_weight="1"
-        android:textColor="#838383"
-        android:textSize="18sp"
-        android:typeface="monospace" />
+        android:background="#ffffff"
+        android:baselineAligned="false"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="visible">
 
-    <Button
-        android:id="@+id/closeButton"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_weight="0"
-        android:background="@android:drawable/ic_menu_close_clear_cancel"
-        android:visibility="visible" />
+        <TextView
+            android:id="@+id/textViewNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/closeButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_weight="0"
+            android:background="@android:drawable/ic_menu_close_clear_cancel"
+            android:visibility="visible" />
+
+    </LinearLayout>
+
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/details"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </android.support.constraint.ConstraintLayout>
 
 </LinearLayout>

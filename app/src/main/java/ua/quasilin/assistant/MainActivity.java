@@ -1,45 +1,39 @@
 package ua.quasilin.assistant;
 
 import android.annotation.SuppressLint;
-import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
-import android.os.Build;
-import android.os.CountDownTimer;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.StrictMode;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.io.IOException;
 
 import ua.quasilin.assistant.services.MainService;
-import ua.quasilin.assistant.services.NotificationListener;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
-import ua.quasilin.assistant.utils.Notificator;
-import ua.quasilin.assistant.utils.Permissions;
-import ua.quasilin.assistant.utils.RunChecker;
+import ua.quasilin.assistant.utils.HistoryArchive;
+import ua.quasilin.assistant.utils.HistoryType;
+import ua.quasilin.assistant.utils.Preferences;
 import ua.quasilin.assistant.utils.ServiceStarter;
+import ua.quasilin.assistant.utils.connection.IConnector;
+import ua.quasilin.assistant.utils.connection.OkConnector;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,12 +42,16 @@ public class MainActivity extends AppCompatActivity {
     ServiceConnection serviceConnection;
     Intent serviceIntent;
     ApplicationParameters parameters;
-    CustomAuthenticator authenticator;
+    IConnector connector;
+    HistoryArchive archive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        archive = HistoryArchive.getArchive(getApplicationContext());
+
         serviceIntent = new Intent(getApplicationContext(), MainService.class);
         serviceConnection = new ServiceConnection() {
             @Override
@@ -73,95 +71,83 @@ public class MainActivity extends AppCompatActivity {
 //        ServiceStarter.Start(getApplicationContext(), new Intent(getApplicationContext(), NotificationListener.class));
 //        bindToService();
         parameters = ApplicationParameters.getInstance(getApplicationContext());
-        authenticator = new CustomAuthenticator(parameters);
+        connector = new OkConnector(parameters);
         initValues();
 
     }
 
     private void initValues() {
+
         Switch mainSwitch = findViewById(R.id.mainSwitcher);
         mainSwitch.setChecked(parameters.isEnable());
-        mainSwitch.setOnClickListener(v -> {
+        mainSwitch.setOnClickListener(s -> {
             parameters.setEnable(mainSwitch.isChecked());
         });
 
-        EditText login = findViewById(R.id.loginEdit);
-        login.setText(parameters.getLogin());
-        login.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        Button preferences = findViewById(R.id.preferences);
+        preferences.setOnClickListener(click ->
+                startActivity(new Intent(getApplicationContext(), Preferences.class)));
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        EditText checkInput = findViewById(R.id.checkText);
+        ProgressBar progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                parameters.setLogin(login.getText().toString());
+        checkInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (v.getId() == R.id.checkText && !hasFocus){
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
             }
         });
 
-        EditText password = findViewById(R.id.editPassword);
-        password.setText(parameters.getPassword());
-        password.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                parameters.setPassword(password.getText().toString());
-            }
-        });
-
-        EditText check = findViewById(R.id.editCheck);
         Button checkButton = findViewById(R.id.checkButton);
-        TextView textArea = findViewById(R.id.textArea);
 
-        checkButton.setOnClickListener(view -> {
-            String checkText = check.getText().toString();
+        checkButton.setOnClickListener( (View check) -> {
+            checkInput.clearFocus();
+            String checkText= checkInput.getText().toString();
             if (!checkText.isEmpty()){
-                @SuppressLint("HandlerLeak") final Handler handler = new Handler(){
-                    @SuppressLint("SetTextI18n")
+                progressBar.setVisibility(View.VISIBLE);
+                @SuppressLint("HandlerLeak") Handler handler = new Handler(){
                     @Override
                     public void handleMessage(Message msg) {
-                        Bundle bundle = msg.getData();
-                        String data = bundle.getString("data");
-                        String contact = data;
-                        try {
-                            JSONObject json = new JSONObject(data);
-                            contact = json.getString("Contact");
-                            textArea.setText(checkText + ": " + contact);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        progressBar.setVisibility(View.INVISIBLE);
+                        String data = msg.getData().getString("data");
+                        if (data != null) {
+                            try {
+                                JSONObject json = new JSONObject(data);
+                                String contact = json.getString("contact");
+                                checkInput.setText("");
+                                archive.addToArchive(HistoryType.custom, checkText, contact);
+                            } catch (JSONException e) {
+                                Log.i("Wrong json ", "_" + data);
+                                Toast.makeText(getApplicationContext(), data, Toast.LENGTH_LONG).show();
+                            }
                         }
-                        textArea.setText(contact);
-
                     }
                 };
+
                 Runnable runnable = () -> {
-                    Message msg = handler.obtainMessage();
+                    Message message = handler.obtainMessage();
                     Bundle bundle = new Bundle();
-                    bundle.putString("data", authenticator.Request(checkText));
-                    msg.setData(bundle);
-                    handler.sendMessage(msg);
+
+                    try {
+                        bundle.putString("data", connector.Request(checkText));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    message.setData(bundle);
+                    handler.sendMessage(message);
+
                 };
+
                 Thread thread = new Thread(runnable);
                 thread.start();
             }
         });
-        StringBuilder builder = new StringBuilder();
 
-        textArea.setText(builder.toString());
-
-        Button testButton = findViewById(R.id.test);
-        testButton.setOnClickListener(v -> {
-            Notificator.show(getApplicationContext(), "Test by test", 1);
-            Notificator.show(getApplicationContext(), "Test by test", 2);
-
-        });
-
+        LinearLayout list = findViewById(R.id.history_list);
+        archive.updateMe(list);
     }
 
 
@@ -177,5 +163,11 @@ public class MainActivity extends AppCompatActivity {
             unbindService(serviceConnection);
             bound=false;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        archive.updateMe(null);
     }
 }

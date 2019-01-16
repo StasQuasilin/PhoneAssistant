@@ -3,6 +3,7 @@ package ua.quasilin.assistant.utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import java.net.FileNameMap;
 import java.util.HashMap;
@@ -19,14 +20,13 @@ import ua.quasilin.assistant.services.MainService;
 public class ApplicationParameters {
     @SuppressLint("StaticFieldLeak")
     private static ApplicationParameters instance;
-    private boolean enable = true;
-    private String login = "administrator";
-    private String password = "111111";
+    private boolean enable;
     private Context context;
-    public int instances = 0;
+    private SharedPreferences defaultSharedPreferences;
 
     private ApplicationParameters(Context context) {
         this.context = context;
+        defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         Read();
     }
 
@@ -41,8 +41,6 @@ public class ApplicationParameters {
         SharedPreferences preferences = context.getSharedPreferences(String.valueOf(R.string.preferences), Context.MODE_PRIVATE);
         if (preferences != null) {
             enable = preferences.getBoolean(String.valueOf(R.string.enable_key), enable);
-            login = preferences.getString(String.valueOf(R.string.login_key), login);
-            password = preferences.getString(String.valueOf(R.string.password_key), password);
         }
     }
 
@@ -50,8 +48,6 @@ public class ApplicationParameters {
         SharedPreferences preferences = context.getSharedPreferences(String.valueOf(R.string.preferences), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(String.valueOf(R.string.enable_key), enable);
-        editor.putString(String.valueOf(R.string.login_key), login);
-        editor.putString(String.valueOf(R.string.password_key), password);
         editor.apply();
     }
 
@@ -60,11 +56,11 @@ public class ApplicationParameters {
     }
 
     public String getLogin() {
-        return login;
+        return defaultSharedPreferences.getString("login", "");
     }
 
     public String getPassword() {
-        return password;
+        return defaultSharedPreferences.getString("password", "");
     }
 
     public void setEnable(boolean enable) {
@@ -72,17 +68,11 @@ public class ApplicationParameters {
         Save();
     }
 
-    public void setLogin(String login) {
-        this.login = login;
-        Save();
+    public String getUrl() {
+        return defaultSharedPreferences.getString("url", "");
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-        Save();
-    }
-
-    String getUrl() {
-        return "https://web-1c.42clouds.com/222cbd881bc28a5e41416b28/1c_my_770_31/hs/PhoneAssistant/Contacts";
+    public Context getContext() {
+        return context;
     }
 }

@@ -56,6 +56,12 @@ public class Notificator {
         return notification;
     }
 
+    public static void close(Context context, int id) {
+        NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancel(id);
+    }
+
     public static void show(Context context, String contact, int id) {
 
         NotificationCompat.Builder builder =

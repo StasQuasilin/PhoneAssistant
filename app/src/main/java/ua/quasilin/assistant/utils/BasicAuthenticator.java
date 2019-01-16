@@ -12,7 +12,7 @@ public class BasicAuthenticator extends Authenticator{
     private String login;
     private String password;
 
-    BasicAuthenticator(String login, String password) {
+    public BasicAuthenticator(String login, String password) {
         this.login = login;
         this.password = password;
     }

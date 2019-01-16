@@ -5,25 +5,37 @@ import android.util.Log;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Scanner;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import ua.quasilin.assistant.utils.NoSSL.NoSSLv3SocketFactory;
+import ua.quasilin.assistant.utils.connection.IConnector;
 
 /**
  * Created by szpt_user045 on 29.10.2018.
  */
 
-public class CustomAuthenticator extends AsyncTask<String, Void, String>{
+public class CustomAuthenticator extends AsyncTask<String, Void, String> implements IConnector {
 
     private ApplicationParameters parameters;
+    private static final String REQUEST_METHOD = "POST";
+    private static final String CHARSET_ENCODING = "UTF-8";
 
     public CustomAuthenticator(ApplicationParameters parameters) {
         this.parameters = parameters;
     }
 
+    @Override
     public String Request(String body){
         return doInBackground(body);
     }
@@ -36,7 +48,10 @@ public class CustomAuthenticator extends AsyncTask<String, Void, String>{
         try {
             Authenticator.setDefault(new BasicAuthenticator(parameters.getLogin(), parameters.getPassword()));
             URL u = new URL(parameters.getUrl());
-            HttpURLConnection urlConnection = (HttpURLConnection) u.openConnection();
+
+            HttpsURLConnection.setDefaultSSLSocketFactory(new NoSSLv3SocketFactory());
+            HttpURLConnection urlConnection = (HttpsURLConnection) u.openConnection();
+
             urlConnection.setRequestMethod("POST");
             urlConnection.connect();
 
@@ -45,7 +60,9 @@ public class CustomAuthenticator extends AsyncTask<String, Void, String>{
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
 
             for(String s : strings) {
-                writer.write(s);
+                if (s != null) {
+                    writer.write(s);
+                }
             }
 
             writer.close();
@@ -53,6 +70,7 @@ public class CustomAuthenticator extends AsyncTask<String, Void, String>{
 
             int responseCode = urlConnection.getResponseCode();
             Log.i("Response Code", String.valueOf(responseCode));
+
 
             if (responseCode != HttpURLConnection.HTTP_OK){
                 result.append("Response code: ").append(responseCode);
@@ -68,9 +86,20 @@ public class CustomAuthenticator extends AsyncTask<String, Void, String>{
                 }
             }
 
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+            return "Wrong login or password";
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return e.getMessage();
         }
+
         return result.toString();
     }
 }

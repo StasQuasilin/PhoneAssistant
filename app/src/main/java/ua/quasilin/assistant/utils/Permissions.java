@@ -14,7 +14,7 @@ import android.provider.Settings;
 
 public class Permissions {
     public static void insert(Context context) {
-        if(Build.VERSION.SDK_INT >= 23) {
+        if(Build.VERSION.SDK_INT > 23) {
             if (!Settings.canDrawOverlays(context)) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + context.getPackageName()));

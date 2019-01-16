@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="login"
+        android:title="@string/login" />
+    <EditTextPreference
+        android:key="password"
+        android:title="@string/password"
+        android:inputType="textPassword" />
+    <EditTextPreference
+        android:key="url"
+        android:title="@string/url_summary"
+        android:defaultValue="https://web-1c.42clouds.com/222cbd881bc28a5e41416b28/1c_my_770_31/hs/PhoneAssistant/Contacts"/>
+
+</PreferenceScreen>

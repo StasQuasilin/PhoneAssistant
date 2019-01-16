@@ -1,5 +1,6 @@
 package ua.quasilin.assistant.services;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import java.util.TimerTask;
 
 import ua.quasilin.assistant.R;
 import ua.quasilin.assistant.receivers.CallReceiver;
+import ua.quasilin.assistant.receivers.ScreenReceiver;
 import ua.quasilin.assistant.utils.ApplicationParameters;
 import ua.quasilin.assistant.utils.CustomAuthenticator;
 import ua.quasilin.assistant.utils.Notificator;
@@ -39,6 +41,7 @@ public class MainService extends Service {
     final IBinder binder = new ServiceBinder();
     ApplicationParameters parameters;
     CallReceiver receiver;
+    CustomAuthenticator authenticator;
 
     @Nullable
     @Override
@@ -63,10 +66,22 @@ public class MainService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         parameters = ApplicationParameters.getInstance(getApplicationContext());
+        authenticator =new CustomAuthenticator(parameters);
+
+//        new Thread(() -> {
+//            authenticator.Request(null);
+//        }).start();
+
+
         Permissions.insert(getApplicationContext());
 
-        receiver = new CallReceiver(parameters);
-        registerReceiver(receiver, new IntentFilter("android.intent.action.PHONE_STATE"));
+        receiver = new CallReceiver(parameters, getApplicationContext());
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        intentFilter.addAction("android.intent.action.PHONE_STATE");
+
+        registerReceiver(receiver, intentFilter);
 
         return START_STICKY;
     }
@@ -77,6 +92,7 @@ public class MainService extends Service {
         }
     }
 
+    @SuppressLint("ShowToast")
     @Override
     public void onDestroy() {
         super.onDestroy();
