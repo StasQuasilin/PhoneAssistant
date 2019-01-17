@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.RequiresPermission;
 import android.telephony.TelephonyManager;
@@ -104,7 +105,7 @@ public class CallReceiver extends BroadcastReceiver {
 
     void DoRequest(final Context context, final String number){
         Log.i("DoRequest", "Do");
-        @SuppressLint("HandlerLeak") final Handler handler = new Handler(){
+        final Handler handler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
