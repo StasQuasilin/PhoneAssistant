@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -105,85 +106,49 @@ public class MainActivity extends AppCompatActivity {
 
         Button checkButton = findViewById(R.id.checkButton);
 
-//        checkButton.setOnClickListener( (View check) -> {
-//            checkInput.clearFocus();
-//            String checkText= checkInput.getText().toString();
-//            if (!checkText.isEmpty()){
-//                progressBar.setVisibility(View.VISIBLE);
-//                @SuppressLint("HandlerLeak") Handler handler = new Handler(){
-//                    @Override
-//                    public void handleMessage(Message msg) {
-//                        progressBar.setVisibility(View.INVISIBLE);
-//                        String data = msg.getData().getString("data");
-//                        if (data != null) {
-//                            try {
-//                                JSONObject json = new JSONObject(data);
-//                                String contact = json.getString("contact");
-//                                checkInput.setText("");
-//                                archive.addToArchive(HistoryType.custom, checkText, contact);
-//                            } catch (JSONException e) {
-//                                Log.i("Wrong json ", "_" + data);
-//                                Toast.makeText(getApplicationContext(), data, Toast.LENGTH_LONG).show();
-//                            }
-//                        }
-//                    }
-//                };
-//
-//                Runnable runnable = () -> {
-//                    Message message = handler.obtainMessage();
-//                    Bundle bundle = new Bundle();
-//
-//                    try {
-//                        bundle.putString("data", connector.Request(checkText));
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                    message.setData(bundle);
-//                    handler.sendMessage(message);
-//
-//                };
-//
-//                Thread thread = new Thread(runnable);
-//                thread.start();
-//            }
-//        });
-
-        checkButton.setOnClickListener(view -> {
-            Runnable runnable = () -> {
-                String check = checkInput.getText().toString();
-                try {
-                    String request = connector.Request(check);
-                    if (request != null) {
-                        try {
-                            JSONObject json = new JSONObject(request);
-                            int status = json.getInt("status");
-                            switch (status){
-                                case 200:
-                                    archive.addToArchive(HistoryType.custom, check, json.getString("contact"));
-                                    break;
-                                case 204:
-                                    archive.addToArchive(HistoryType.custom, check, "Не определен");
-                                    break;
-                                case 401:
-                                    Toast.makeText(getApplicationContext(), "Не ужадлсь получить пройти авторизацию", Toast.LENGTH_LONG).show();
-                                    break;
-                                default:
-                                    Toast.makeText(getApplicationContext(), "Не ужадлсь получить информацию", Toast.LENGTH_LONG).show();
-                                    break;
+        checkButton.setOnClickListener( (View check) -> {
+            checkInput.clearFocus();
+            String checkText= checkInput.getText().toString();
+            if (!checkText.isEmpty()){
+                progressBar.setVisibility(View.VISIBLE);
+                Handler handler = new Handler(Looper.getMainLooper()){
+                    @Override
+                    public void handleMessage(Message msg) {
+                        progressBar.setVisibility(View.INVISIBLE);
+                        String data = msg.getData().getString("data");
+                        if (data != null) {
+                            try {
+                                JSONObject json = new JSONObject(data);
+                                String contact = json.getString("contact");
+                                checkInput.setText("");
+                                archive.addToArchive(HistoryType.custom, checkText, contact);
+                            } catch (JSONException e) {
+                                Log.i("Wrong json ", "_" + data);
+                                Toast.makeText(getApplicationContext(), data, Toast.LENGTH_LONG).show();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            };
+                };
 
-            Thread thread = new Thread(runnable);
-            thread.start();
+                Runnable runnable = () -> {
+                    Message message = handler.obtainMessage();
+                    Bundle bundle = new Bundle();
 
+                    try {
+                        bundle.putString("data", connector.Request(checkText));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    message.setData(bundle);
+                    handler.sendMessage(message);
+
+                };
+
+                Thread thread = new Thread(runnable);
+                thread.start();
+            }
         });
+
         LinearLayout list = findViewById(R.id.history_list);
         archive.updateMe(list);
     }
