@@ -23,10 +23,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import ua.quasilin.assistant.R;
 import ua.quasilin.assistant.utils.ApplicationParameters;
@@ -79,7 +83,6 @@ public class CallReceiver extends BroadcastReceiver {
             String extra = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
             if (extra.equals(TelephonyManager.EXTRA_STATE_RINGING)){
                 if (!incomeCall) {
-                    Toast.makeText(context, "Income call", Toast.LENGTH_SHORT).show();
                     if (parameters.isEnable()) {
                         currentScreenState = screenLock;
                         String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
@@ -111,21 +114,40 @@ public class CallReceiver extends BroadcastReceiver {
                 Log.i("Data", bundle.toString());
                 String data = bundle.getString("data");
                 String contact = data;
+                HashMap<String, String> hashMap = new HashMap<>();
+
                 if (data != null) {
                     try {
                         JSONObject json = new JSONObject(data);
                         contact = json.getString("contact");
+                        JSONArray details = json.getJSONArray("details");
+
+                        for (int i = 0; i < details.length(); i++) {
+                            JSONObject jsonObject = details.getJSONObject(i);
+                            Iterator<String> keys = jsonObject.keys();
+                            while (keys.hasNext()){
+                                String next = keys.next();
+                                if (!hashMap.containsKey(next)){
+                                    hashMap.put(next, jsonObject.getString(next));
+                                }
+                            }
+                        }
+
+
                         archive.addToArchive(HistoryType.income, number, contact);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    if (incomeCall) {
-                        if (currentScreenState) {
-                            CallReceiver.ShowNotification(context, contact);
-                        } else {
-                            CallReceiver.ShowMessage(context, contact);
-                        }
 
+                    int position;
+                    if (currentScreenState){
+                        position = parameters.getPosition("position_lock");
+                    } else {
+                        position = parameters.getPosition("position");
+                    }
+
+                    if (incomeCall) {
+                        CallReceiver.ShowMessage(context, contact, hashMap, position);
                     }
                 }
             }
@@ -174,7 +196,7 @@ public class CallReceiver extends BroadcastReceiver {
         Notificator.show(context, contact, NOTIFICATION_ID);
     }
 
-    public static void ShowMessage(Context context, String phoneNumber) {
+    public static void ShowMessage(Context context, String phoneNumber, HashMap<String, String> hashMap, int position) {
 
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         int LAYOUT_FLAG;
@@ -187,22 +209,24 @@ public class CallReceiver extends BroadcastReceiver {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 LAYOUT_FLAG,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
                 PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.CENTER;
-
+        params.gravity = position;
         windowLayout = (ViewGroup) layoutInflater.inflate(R.layout.info, null);
 
         TextView textViewNumber= windowLayout.findViewById(R.id.textViewNumber);
         Button buttonClose= windowLayout.findViewById(R.id.closeButton);
-//        TextView details = windowLayout.findViewById(R.id.details);
+        TextView details = windowLayout.findViewById(R.id.details);
 
         textViewNumber.setText(phoneNumber);
-
+        StringBuilder builder = new StringBuilder();
+        for(Map.Entry<String, String> entry : hashMap.entrySet()){
+            builder.append(entry.getKey()).append(" - ").append(entry.getValue()).append("\n");
+        }
+        details.setText(builder.toString());
         buttonClose.setOnClickListener(v -> closeWindow(context));
 
         windowManager.addView(windowLayout, params);
-
     }
 
     private static void closeWindow(Context context) {

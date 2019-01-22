@@ -19,5 +19,18 @@
     <string name="url_summary">Адрес сервиса</string>
     <string name="app_preferences">Настройки доступа</string>
     <string name="clear">Очистить</string>
+    <string name="position">Позиция уведомления</string>
+    <string name="position_lock">на заблокированном экране</string>
+
+    <string-array name="settings_position">
+        <item>Сверху</item>
+        <item>Посредине</item>
+        <item>Снизу</item>
+    </string-array>
+    <string-array name="settings_position_entry">
+        <item>48</item>
+        <item>17</item>
+        <item>80</item>
+    </string-array>
 
 </resources>

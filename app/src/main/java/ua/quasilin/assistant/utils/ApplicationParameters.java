@@ -4,14 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-
-import java.net.FileNameMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import android.view.Gravity;
 
 import ua.quasilin.assistant.R;
-import ua.quasilin.assistant.services.MainService;
 
 /**
  * Created by szpt_user045 on 29.10.2018.
@@ -74,5 +69,13 @@ public class ApplicationParameters {
 
     public Context getContext() {
         return context;
+    }
+
+    public int getPosition(String name) {
+        try {
+            return Integer.parseInt(defaultSharedPreferences.getString(name, null));
+        } catch (Exception ignored){
+            return Gravity.CENTER;
+        }
     }
 }

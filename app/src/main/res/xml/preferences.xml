@@ -11,5 +11,18 @@
         android:key="url"
         android:title="@string/url_summary"
         android:defaultValue="https://web-1c.42clouds.com/222cbd881bc28a5e41416b28/1c_my_770_31/hs/PhoneAssistant/Contacts"/>
+    <ListPreference
+        android:key="position"
+        android:title="@string/position"
+        android:entries="@array/settings_position"
+        android:entryValues="@array/settings_position_entry"
+        android:defaultValue="2"/>
+    <ListPreference
+        android:key="position_lock"
+        android:title="@string/position"
+        android:summary="@string/position_lock"
+        android:entries="@array/settings_position"
+        android:entryValues="@array/settings_position_entry"
+        android:defaultValue="center"/>
 
 </PreferenceScreen>

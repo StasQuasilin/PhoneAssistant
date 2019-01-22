@@ -33,7 +33,7 @@ public class OkConnector implements IConnector {
     @Override
     public String Request(String number) throws IOException {
 
-        RequestBody body = RequestBody.create(JSON, "number=" + number);
+        RequestBody body = RequestBody.create(JSON, number);
         Request request = new Request.Builder()
                 .url(parameters.getUrl())
                 .post(body)
