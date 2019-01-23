@@ -24,18 +24,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
+import ua.quasilin.assistant.Constants;
 import ua.quasilin.assistant.R;
 import ua.quasilin.assistant.utils.ApplicationParameters;
-import ua.quasilin.assistant.utils.CustomAuthenticator;
 import ua.quasilin.assistant.utils.DisplayState;
 import ua.quasilin.assistant.utils.HistoryArchive;
 import ua.quasilin.assistant.utils.HistoryType;
@@ -113,26 +111,26 @@ public class CallReceiver extends BroadcastReceiver {
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
                 Log.i("Data", bundle.toString());
-                String data = bundle.getString("data");
+                String data = bundle.getString(Constants.DATA);
                 String contact = data;
                 HashMap<String, String> hashMap = new HashMap<>();
 
                 if (data != null) {
                     try {
                         JSONObject json = new JSONObject(data);
-                        contact = json.getString("contact");
-                        JSONArray details = json.getJSONArray("details");
+                        contact = json.getString(Constants.CONTACT);
+//                        JSONArray details = json.getJSONArray("details");
 
-                        for (int i = 0; i < details.length(); i++) {
-                            JSONObject jsonObject = details.getJSONObject(i);
-                            Iterator<String> keys = jsonObject.keys();
-                            while (keys.hasNext()){
-                                String next = keys.next();
-                                if (!hashMap.containsKey(next)){
-                                    hashMap.put(next, jsonObject.getString(next));
-                                }
-                            }
-                        }
+//                        for (int i = 0; i < details.length(); i++) {
+//                            JSONObject jsonObject = details.getJSONObject(i);
+//                            Iterator<String> keys = jsonObject.keys();
+//                            while (keys.hasNext()){
+//                                String next = keys.next();
+//                                if (!hashMap.containsKey(next)){
+//                                    hashMap.put(next, jsonObject.getString(next));
+//                                }
+//                            }
+//                        }
 
 
                         archive.addToArchive(HistoryType.income, number, contact);

@@ -1,11 +1,9 @@
 package ua.quasilin.assistant;
 
-import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -29,7 +27,6 @@ import java.io.IOException;
 
 import ua.quasilin.assistant.services.MainService;
 import ua.quasilin.assistant.utils.ApplicationParameters;
-import ua.quasilin.assistant.utils.CustomAuthenticator;
 import ua.quasilin.assistant.utils.HistoryArchive;
 import ua.quasilin.assistant.utils.HistoryType;
 import ua.quasilin.assistant.utils.Preferences;
@@ -115,14 +112,24 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void handleMessage(Message msg) {
                         progressBar.setVisibility(View.INVISIBLE);
-                        String data = msg.getData().getString("data");
+                        String data = msg.getData().getString(Constants.DATA);
+                        checkInput.setText("");
+
                         if (data != null) {
                             try {
+                                StringBuilder builder = new StringBuilder();
+
+                                for (char c : data.toCharArray()){
+                                    if (Character.isLetter(c) || Character.isDigit(c) || Character.isSpaceChar(c) || c == '{' || c == ':' || c == '}' || c == '"'){
+                                        builder.append(c);
+                                    }
+                                }
+                                data = builder.toString();
                                 JSONObject json = new JSONObject(data);
-                                String contact = json.getString("contact");
-                                checkInput.setText("");
+                                String contact = json.getString(Constants.CONTACT);
                                 archive.addToArchive(HistoryType.custom, checkText, contact);
                             } catch (JSONException e) {
+                                e.printStackTrace();
                                 Log.i("Wrong json ", "_" + data);
                                 Toast.makeText(getApplicationContext(), data, Toast.LENGTH_LONG).show();
                             }
@@ -135,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                     Bundle bundle = new Bundle();
 
                     try {
-                        bundle.putString("data", connector.Request(checkText));
+                        bundle.putString(Constants.DATA, connector.Request(checkText));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

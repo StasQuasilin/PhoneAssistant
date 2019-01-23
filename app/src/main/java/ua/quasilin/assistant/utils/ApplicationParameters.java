@@ -78,4 +78,13 @@ public class ApplicationParameters {
             return Gravity.CENTER;
         }
     }
+
+    public boolean getBoolean(String name, boolean def){
+        return defaultSharedPreferences.getBoolean(name, def);
+    }
+    public void setBoolean(String name, boolean value){
+        SharedPreferences.Editor editor = defaultSharedPreferences.edit();
+        editor.putBoolean(name, value);
+        editor.apply();
+    }
 }
